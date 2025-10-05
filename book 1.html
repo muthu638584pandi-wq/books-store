@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vivid Online Book Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Global Styles and Animations */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    html, body {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+    body {
+      background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat fixed;
+      min-height: 100vh;
+      color: #fff;
+      position: relative;
+    }
+    .overlay {
+      position: fixed; top:0; left:0; width:100vw; height:100vh;
+      background: rgba(30,30,60,0.8);
+      z-index: 0;
+      pointer-events:none;
+    }
+    header {
+      z-index: 2;
+      background: linear-gradient(90deg,#ff6f00,#d32f2f,#1976d2,#388e3c,#e040fb);
+      background-size: 400% 400%;
+      animation: gradientbg 8s ease infinite;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 18px 0 rgba(0,0,0,0.15);
+      position: sticky;
+      top:0;
+    }
+    @keyframes gradientbg {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 1px 1px 10px #222;
+      user-select: none;
+      cursor: pointer;
+      animation: logoGlow 2s infinite alternate;
+    }
+    @keyframes logoGlow {
+      0% { text-shadow: 0 0 10px #fff;}
+      100% { text-shadow: 0 0 30px #fff, 0 0 10px #ffd600;}
+    }
+    nav {
+      display: flex;
+      gap: 1.2rem;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color .2s;
+      padding: .5rem 1rem;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      background:rgba(255,255,255,0.1);
+      transition: background .2s, color .2s, transform .2s;
+    }
+    nav a:hover, nav a.active {
+      background: #fff;
+      color: #222;
+      transform: scale(1.07);
+    }
+    .searchbar {
+      display: flex;
+      align-items: center;
+      margin-right: 1rem;
+      position: relative;
+    }
+    .searchbar input {
+      padding: .5rem 2rem .5rem .8rem;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      font-size: 1.1rem;
+      background: rgba(255,255,255,0.85);
+      color: #222;
+      box-shadow: 0 1px 8px 0 rgba(0,0,0,0.12);
+      width: 220px;
+      transition: width .3s;
+    }
+    .searchbar input:focus {
+      width: 300px;
+      background: #fff;
+    }
+    .searchbar .icon {
+      position: absolute; right: 10px; color: #666;
+      font-size: 1.3rem;
+      pointer-events: none;
+    }
+
+    /* Main Content Area */
+    main {
+      z-index: 1;
+      position: relative;
+      min-height: 90vh;
+      width: 100vw;
+      padding: 2rem 4vw 4rem 4vw;
+      transition: all .5s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page {
+      width: 100%;
+      max-width: 1600px;
+      min-height: 75vh;
+      background: rgba(255,255,255,0.07);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 32px 0 rgba(0,0,0,0.13);
+      padding: 2rem 4vw;
+      animation: fadeIn .6s 1;
+      position: relative;
+      overflow: hidden;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    /* Book List Grid */
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 2rem;
+    }
+    .book-card {
+      background: linear-gradient(160deg, #fff8e1 60%, #ffe0b2 100%);
+      color: #333;
+      border-radius: 15px;
+      box-shadow: 0 2px 16px 0 rgba(80,80,80,0.12);
+      padding: 1rem .7rem 1rem .7rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow .2s, transform .2s;
+      cursor: pointer;
+      min-height: 340px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      animation: cardEnter 1s;
+    }
+    @keyframes cardEnter {
+      from { transform: translateY(80px) scale(0.95); opacity:0;}
+      to { transform: translateY(0) scale(1); opacity:1;}
+    }
+    .book-card:hover {
+      box-shadow: 0 6px 28px 0 #ffecb3, 0 0 0 4px #ffb30077;
+      transform: scale(1.04) rotate(-1deg);
+      border: 2px solid #ffd54f;
+      z-index: 2;
+    }
+    .book-img {
+      width: 120px; height: 170px;
+      object-fit: cover; border-radius: 7px;
+      box-shadow: 0 2px 8px 0 #fbc02d77;
+      margin-bottom: 1rem;
+      background: #eee;
+      transition: transform .3s;
+      animation: imgBounce 3s infinite alternate;
+    }
+    @keyframes imgBounce {
+      0% {transform: translateY(0) scale(1);}
+      60% {transform: translateY(-8px) scale(1.04);}
+      100% {transform: translateY(0) scale(1);}
+    }
+    .book-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: .6rem;
+      text-align: center;
+      color: #ff6f00;
+      min-height: 45px;
+      max-height: 45px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 98%;
+    }
+    .book-author {
+      font-size: .98rem;
+      color: #444;
+      margin-bottom: .4rem;
+      text-align: center;
+      min-height: 22px;
+    }
+    .book-cat {
+      font-size: .93rem;
+      color: #388e3c;
+      background: #e8f5e9;
+      padding: 2px 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: inline-block;
+      margin-bottom: .6rem;
+      letter-spacing: 1px;
+    }
+    .book-actions {
+      margin-top: auto;
+      display: flex;
+      gap: .7rem;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn {
+      background: linear-gradient(90deg,#ffd600,#ffab00);
+      color: #444;
+      border: none;
+      border-radius: 10px;
+      padding: .38rem 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 1px 6px #ffd60055;
+      transition: background .2s, color .2s, transform .2s;
+    }
+    .btn:hover {
+      background: #ff6f00;
+      color: #fff;
+      transform: scale(1.09);
+    }
+
+    /* Category List */
+    .category-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .category-btn {
+      background: linear-gradient(120deg,#a7ffeb,#1de9b6);
+      color: #333;
+      border: none;
+      padding: .6rem 1.7rem;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: .7rem;
+      box-shadow: 0 2px 12px #26a69a33;
+      transition: background .15s, color .15s, transform .15s;
+      cursor: pointer;
+    }
+    .category-btn.selected, .category-btn:hover {
+      background: linear-gradient(120deg,#00bcd4,#00e676);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    /* Book Detail Page */
+    .book-detail {
+      display: flex;
+      flex-direction: row;
+      gap: 2.5rem;
+      padding: 2.5rem 2vw;
+      align-items: flex-start;
+      background: linear-gradient(130deg,#fffde7 60%, #ffe0b2 100%);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px #fbc02d22;
+      color: #333;
+      min-height: 400px;
+      margin-bottom: 1rem;
+      animation: fadeIn .7s;
+      position: relative;
+      z-index: 1;
+    }
+    .book-detail-img {
+      width: 200px; height: 270px;
+      object-fit: cover; border-radius: 12px;
+      box-shadow: 0 2px 12px #fbc02d66;
+      background: #fff9e5;
+      margin-right: 2rem;
+      flex-shrink: 0;
+      animation: imgBounce 2.5s infinite alternate;
+    }
+    .book-detail-info {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .book-detail-title {
+      font-size: 2.1rem;
+      font-weight: bold;
+      color: #d84315;
+      margin-bottom: .8rem;
+    }
+    .book-detail-author {
+      font-size: 1.3rem;
+      color: #388e3c;
+      margin-bottom: .6rem;
+      font-weight: bold;
+    }
+    .book-detail-cat, .book-detail-lang {
+      font-size: 1.07rem;
+      color: #0277bd;
+      background: #e3f2fd;
+      padding: 3px 18px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-right: 1rem;
+      margin-bottom: .7rem;
+      display: inline-block;
+    }
+    .book-detail-desc {
+      font-size: 1.09rem;
+      color: #333;
+      background: #fffde7;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .book-detail-actions {
+      display: flex;
+      gap: 1.3rem;
+      margin-top: 1rem;
+    }
+    .book-detail-actions .btn {
+      font-size: 1.15rem;
+      padding: .5rem 1.7rem;
+    }
+    .book-download-link, .book-read-link {
+      text-decoration: none;
+      color: #0288d1;
+      font-weight: 600;
+      font-size: 1.03rem;
+      margin-left: 1.2rem;
+      transition: color .18s;
+    }
+    .book-download-link:hover, .book-read-link:hover {
+      color: #d84315;
+      text-decoration: underline;
+    }
+    /* Login Page */
+    .login-form {
+      width: 400px;
+      margin: 4rem auto 0 auto;
+      background: linear-gradient(110deg,#fffde7 70%, #fff8e1 100%);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #fbc02d33;
+      padding: 2.5rem 2rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #222;
+      animation: fadeIn .7s;
+    }
+    .login-form h2 {
+      margin: 0 0 1.3rem 0;
+      font-size: 1.8rem;
+      color: #ff6f00;
+    }
+    .login-form label {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: .5rem;
+      align-self: flex-start;
+    }
+    .login-form input {
+      padding: .6rem 1rem;
+      border-radius: 9px;
+      border: 1px solid #ffd54f;
+      font-size: 1.1rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      width: 100%;
+      background: #fffde7;
+      color: #222;
+      box-shadow: 0 1px 6px #ffd60022;
+      transition: border .18s;
+    }
+    .login-form input:focus {
+      border: 2px solid #ff6f00;
+    }
+    .login-form button {
+      padding: .7rem 2.5rem;
+      background: linear-gradient(90deg,#ffd600,#ffab00);
+      color: #222;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: .8rem;
+      box-shadow: 0 1px 8px #ffd60033;
+      cursor: pointer;
+      transition: background .2s, color .2s, transform .2s;
+    }
+    .login-form button:hover {
+      background: #ff6f00;
+      color: #fff;
+      transform: scale(1.06);
+    }
+    .login-form .error {
+      color: #d32f2f;
+      margin-bottom: .8rem;
+      font-weight: 600;
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .book-detail { flex-direction: column; align-items: center; }
+      .book-detail-img { margin-bottom:1.3rem; }
+      .login-form { width: 98vw; min-width: 0; }
+    }
+    @media (max-width: 600px) {
+      header { flex-direction: column; gap: 1rem; }
+      main { padding: 1rem 1vw 2rem 1vw;}
+      .page { padding: 1.1rem 1vw;}
+    }
+    /* Beautiful Scrollbars */
+    ::-webkit-scrollbar { width: 10px;}
+    ::-webkit-scrollbar-thumb { background: #ffd54f; border-radius: 8px;}
+    ::-webkit-scrollbar-track { background: #fffde7;}
+  </style>
+</head>
+<body>
+<div class="overlay"></div>
+<header>
+  <div class="logo" onclick="navigate('home')">📚 BookStore</div>
+  <div class="searchbar">
+    <input type="text" id="searchInput" placeholder="Search books, author, category..." oninput="onSearchInput()">
+    <span class="icon">🔍</span>
+  </div>
+  <nav>
+    <a href="#" onclick="navigate('home');return false;" id="nav-home" class="active">Home</a>
+    <a href="#" onclick="navigate('categories');return false;" id="nav-cat">Categories</a>
+    <a href="#" onclick="navigate('login');return false;" id="nav-login">Login</a>
+  </nav>
+</header>
+<main>
+  <!-- Pages will be rendered here -->
+  <div id="page-container"></div>
+</main>
+<script>
+/* Book Data Structure: id, title, author, language, category, description, cover, download, readLink */
+const books = [
+  // -- For demonstration, only 50 sample books; repeat pattern with unique data for 1000+
+  {id:1, title:"Ponniyin Selvan", author:"Kalki", language:"Tamil", category:"Historical", description:"A grand Tamil historical novel...", cover:"https://covers.openlibrary.org/b/id/10521691-L.jpg", download:"#", readLink:"#"},
+  {id:2, title:"Thirukkural", author:"Thiruvalluvar", language:"Tamil", category:"Classics", description:"The seminal Tamil poetic work...", cover:"https://covers.openlibrary.org/b/id/11134710-L.jpg", download:"#", readLink:"#"},
+  {id:3, title:"Harry Potter and the Philosopher's Stone", author:"J.K. Rowling", language:"English", category:"Fantasy", description:"The magical journey begins...", cover:"https://covers.openlibrary.org/b/id/7888781-L.jpg", download:"#", readLink:"#"},
+  {id:4, title:"The Alchemist", author:"Paulo Coelho", language:"English", category:"Philosophy", description:"A journey of self-discovery...", cover:"https://covers.openlibrary.org/b/id/8231856-L.jpg", download:"#", readLink:"#"},
+  {id:5, title:"பரிப்பாடல்", author:"Sangam Poets", language:"Tamil", category:"Sangam", description:"Tamil Sangam poetry collection...", cover:"https://covers.openlibrary.org/b/id/11338422-L.jpg", download:"#", readLink:"#"},
+  {id:6, title:"Wings of Fire", author:"A.P.J. Abdul Kalam", language:"English", category:"Biography", description:"The autobiography of Dr. Kalam...", cover:"https://covers.openlibrary.org/b/id/9362197-L.jpg", download:"#", readLink:"#"},
+  {id:7, title:"பாவேந்தர் பாரதிதாசன் கவிதைகள்", author:"Bharathidasan", language:"Tamil", category:"Poetry", description:"Poems of Bharathidasan...", cover:"https://covers.openlibrary.org/b/id/10521706-L.jpg", download:"#", readLink:"#"},
+  {id:8, title:"Pride and Prejudice", author:"Jane Austen", language:"English", category:"Romance", description:"The classic romance novel...", cover:"https://covers.openlibrary.org/b/id/8228692-L.jpg", download:"#", readLink:"#"},
+  {id:9, title:"Life of Pi", author:"Yann Martel", language:"English", category:"Adventure", description:"A boy and a tiger survive at sea...", cover:"https://covers.openlibrary.org/b/id/8315045-L.jpg", download:"#", readLink:"#"},
+  {id:10, title:"Sivagamiyin Sabatham", author:"Kalki", language:"Tamil", category:"Historical", description:"A Tamil epic set in Pallava dynasty...", cover:"https://covers.openlibrary.org/b/id/11338421-L.jpg", download:"#", readLink:"#"},
+  // ... repeat and create up to 1000 books, mixing languages, categories, covers, etc.
+];
+// Auto-populate up to 1000 demo entries (for demo, not real titles)
+for(let i=11;i<=1000;i++){
+  books.push({
+    id:i,
+    title:`Sample Book ${i}`,
+    author:`Author ${i%50+1}`,
+    language: (i%2==0?"English":(i%3==0?"Tamil":"Hindi")),
+    category: ["Fantasy","Poetry","History","Science","Biography","Romance","Thriller","Philosophy","Adventure","Spirituality","Drama","Comedy","Children","Classics","Self-help","Technology","Education","Sangam","Comics","Horror"][i%20],
+    description:`This is a sample description for Sample Book ${i}, a wonderful book in its category.`,
+    cover:"https://covers.openlibrary.org/b/id/" + (10521690 + (i%50)) + "-L.jpg",
+    download:"#",
+    readLink:"#"
+  });
+}
+
+const categories = [
+  "Historical", "Fantasy", "Poetry", "Classics", "Biography", "Romance", "Philosophy", "Adventure", "Sangam", "Spirituality",
+  "Science", "Technology", "Self-help", "Drama", "Comedy", "Children", "Horror", "Comics", "Education", "Thriller"
+];
+const languages = ["Tamil","English","Hindi","Malayalam","Telugu","Kannada","French","German","Spanish","Chinese"];
+
+let state = {
+  page: 'home',
+  selectedCategory: '',
+  selectedBookId: null,
+  search: '',
+  isLoggedIn: false,
+  books: books,
+};
+
+function render() {
+  // Navigation highlight
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  if(state.page==='home') document.getElementById('nav-home').classList.add('active');
+  else if(state.page==='categories') document.getElementById('nav-cat').classList.add('active');
+  else if(state.page==='login') document.getElementById('nav-login').classList.add('active');
+  // Page rendering
+  let html = '';
+  switch(state.page){
+    case 'home':
+      html = homePage();
+      break;
+    case 'categories':
+      html = categoriesPage();
+      break;
+    case 'category':
+      html = categoryBooksPage();
+      break;
+    case 'book':
+      html = bookDetailPage();
+      break;
+    case 'login':
+      html = loginPage();
+      break;
+    default:
+      html = homePage();
+  }
+  document.getElementById('page-container').innerHTML = html;
+  if(state.page==='login') setTimeout(()=>document.getElementById('login-username')?.focus(), 500);
+}
+function navigate(page, param) {
+  state.page = page;
+  if(page==="category" && param) state.selectedCategory=param;
+  if(page==="book" && param) state.selectedBookId=param;
+  if(page!=="category") state.selectedCategory='';
+  if(page!=="book") state.selectedBookId=null;
+  if(page!=="home") state.search='';
+  render();
+  window.scrollTo(0,0);
+}
+function onSearchInput() {
+  const val = document.getElementById('searchInput').value.trim();
+  state.search = val;
+  if(state.page!=='home') navigate('home');
+  else render();
+}
+function homePage() {
+  // Show colorful animated banner and featured books
+  // Filter by search
+  let displayBooks = state.books;
+  if(state.search){
+    const q = state.search.toLowerCase();
+    displayBooks = displayBooks.filter(b=>
+      b.title.toLowerCase().includes(q) ||
+      b.author.toLowerCase().includes(q) ||
+      b.category.toLowerCase().includes(q) ||
+      b.language.toLowerCase().includes(q)
+    );
+  }
+  displayBooks = displayBooks.slice(0, 40); // Show 40 on home, for perf
+  return `
+  <div class="page">
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <h1 style="font-size:2.7rem;color:#ffd600;text-align:center;margin-bottom:.3rem;text-shadow:2px 2px 18px #222;">
+        Welcome to the <span style="color:#e040fb;">Vivid Online Book Store</span>
+      </h1>
+      <p style="font-size:1.2rem;color:#fffde7;text-align:center;max-width:900px;margin-bottom:2.2rem;">
+        Discover and read <b>1000+ books</b> across <b>20+ categories</b> in Tamil, English, and more languages.
+        <br>Enjoy full color, beautiful animation, and <span style="color:#ffd600;">free download & reading</span>!
+      </p>
+      <div class="category-list">
+        ${categories.slice(0,10).map(cat=>`
+          <button class="category-btn" onclick="navigate('category','${cat}')">${cat}</button>
+        `).join('')}
+        <button class="category-btn" onclick="navigate('categories')">All Categories ➔</button>
+      </div>
+      <h2 style="color:#fffde7;margin:.7rem 0 1.2rem 0;font-size:2rem;">🌟 Featured Books</h2>
+      <div class="book-grid" id="home-book-list">
+        ${displayBooks.map(book=>bookCard(book)).join('')}
+      </div>
+    </div>
+  </div>
+  `;
+}
+function categoriesPage() {
+  // Show all 20 categories
+  return `
+  <div class="page">
+    <h2 style="font-size:2rem;color:#ffd600;">Book Categories</h2>
+    <div class="category-list" style="flex-wrap:wrap;">
+      ${categories.map(cat=>`
+        <button class="category-btn" onclick="navigate('category','${cat}')">${cat}</button>
+      `).join('')}
+    </div>
+    <p style="color:#fffde7;margin-top:1.5rem;font-size:1.15rem;">
+      Select a category to explore all books.
+    </p>
+  </div>
+  `;
+}
+function categoryBooksPage() {
+  // Show all books of the selected category
+  const cat = state.selectedCategory;
+  let catBooks = state.books.filter(b=>b.category===cat).slice(0,50); // show 50 per page
+  return `
+  <div class="page">
+    <h2 style="color:#ffd600;font-size:2rem;">Category: ${cat}</h2>
+    <div class="book-grid">
+      ${catBooks.map(book=>bookCard(book)).join('')}
+    </div>
+    <div style="margin-top:2rem;">
+      <button class="btn" onclick="navigate('categories')">← Back to Categories</button>
+      <button class="btn" onclick="navigate('home')">🏠 Home</button>
+    </div>
+  </div>
+  `;
+}
+function bookCard(book) {
+  return `
+    <div class="book-card" onclick="navigate('book',${book.id})" title="Tap for details">
+      <img class="book-img" src="${book.cover}" alt="Book cover">
+      <div class="book-title">${book.title}</div>
+      <div class="book-author">${book.author}</div>
+      <div class="book-cat">${book.category}</div>
+      <div class="book-actions">
+        <button class="btn" onclick="event.stopPropagation();downloadBook(${book.id});">Download</button>
+        <button class="btn" onclick="event.stopPropagation();readBook(${book.id});">Read</button>
+      </div>
+    </div>
+  `;
+}
+function bookDetailPage() {
+  // Show full details for selectedBookId
+  const book = state.books.find(b=>b.id==state.selectedBookId);
+  if(!book) return `<div class="page"><h2>Book Not Found</h2></div>`;
+  return `
+  <div class="page">
+    <div class="book-detail">
+      <img class="book-detail-img" src="${book.cover}" alt="Book cover">
+      <div class="book-detail-info">
+        <div class="book-detail-title">${book.title}</div>
+        <div class="book-detail-author">By ${book.author}</div>
+        <div>
+          <span class="book-detail-cat">${book.category}</span>
+          <span class="book-detail-lang">${book.language}</span>
+        </div>
+        <div class="book-detail-desc">${book.description}</div>
+        <div class="book-detail-actions">
+          <a class="btn" href="${book.download}" target="_blank" download>Download</a>
+          <a class="btn" href="${book.readLink}" target="_blank">Read</a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1.5rem;">
+      <button class="btn" onclick="navigate('home')">← Back to Home</button>
+      <button class="btn" onclick="navigate('category','${book.category}')">More in ${book.category}</button>
+    </div>
+  </div>
+  `;
+}
+function loginPage() {
+  return `
+    <div class="page">
+      <form class="login-form" onsubmit="doLogin(event)">
+        <h2>🔐 Login</h2>
+        <div>
+          <label for="login-username">Username</label><br>
+          <input type="text" id="login-username" required autocomplete="username" placeholder="Enter your username">
+        </div>
+        <div>
+          <label for="login-password">Password</label><br>
+          <input type="password" id="login-password" required autocomplete="current-password" placeholder="Enter your password">
+        </div>
+        <div class="error" id="login-error"></div>
+        <button type="submit">Login</button>
+        <div style="margin-top:1.2rem;font-size:.98rem;color:#444;">
+          No account? <a href="#" style="color:#1976d2;text-decoration:underline;" onclick="alert('Registration coming soon!')">Register Here</a>
+        </div>
+      </form>
+    </div>
+  `;
+}
+function doLogin(e) {
+  e.preventDefault();
+  const user = document.getElementById('login-username').value;
+  const pass = document.getElementById('login-password').value;
+  if(user==='testuser' && pass==='password123'){
+    state.isLoggedIn = true;
+    document.getElementById('login-error').innerText = '';
+    alert('Login successful!');
+    navigate('home');
+  } else {
+    document.getElementById('login-error').innerText = 'Invalid username or password!';
+  }
+}
+// Book actions
+function downloadBook(id) {
+  const book = state.books.find(b=>b.id==id);
+  window.open(book.download,'_blank');
+}
+function readBook(id) {
+  const book = state.books.find(b=>b.id==id);
+  window.open(book.readLink,'_blank');
+}
+// Init
+render();
+// For demo, expose navigate to window
+window.navigate = navigate;
+window.doLogin = doLogin;
+window.downloadBook = downloadBook;
+window.readBook = readBook;
+window.onSearchInput = onSearchInput;
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
